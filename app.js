@@ -5,12 +5,42 @@ const Router = require('koa-router')
 const bodyParser = require('koa-bodyparser')
 const logger = require('koa-logger')
 const mongo = require('koa-mongo')
+const jsonwebtoken = require('jsonwebtoken')
 
 const router = new Router()
 const app = new Koa()
 app.use(bodyParser())
 app.use(logger())
 app.use(mongo())
+
+app.use(async (ctx, next) => {
+  switch(ctx.request.url) { 
+    case '/users/catchPokemon':
+    case '/users/removeAccount':
+      try {
+        const user = jsonwebtoken.verify(
+          ctx.request.header.authorization,
+          'hush-hush'
+        )
+      
+        if (!user) {
+          return ctx.status = 401
+        }
+      
+        ctx.user = user
+        return next()
+      } catch (err) {
+        ctx.status = 401
+        return ctx.body = {
+          error: "Authentication failed"
+        }
+      }
+    break;
+    default:
+      return next()
+      break;
+  }
+})
 
 router.get('/', async(ctx, next) => {
   ctx.body = {
@@ -63,8 +93,31 @@ router.patch('/users/catchPokemon', async(ctx, next) => {
     attacks
   } = ctx.request.body
 
+  if(!ctx.user) {
+    ctx.status = 401
+    return ctx.body = {
+      error: "Authentication failed"
+    }
+  }
+
+  const user = await ctx.db.collection('pokemon')
+    .findOne({ _id: mongo.ObjectId(ctx.user.id) })
+
+  const pokemon = {
+    name,
+    level,
+    hitPoints,
+    attacks
+  }
+  
+  if(user.pokemons) {
+    user.pokemons.push(pokemon)
+  } else {
+    user.pokemons = [pokemon]
+  }
+
   ctx.body = {
-    message: 'users/catchPokemon',
+    user
   }
 })
 
@@ -77,9 +130,15 @@ router.post('/users/login', async(ctx, next) => {
   if (!user) {
     return ctx.status = 404
   }
+  const accessToken = await jsonwebtoken.sign({
+    id: user._id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName
+  }, "hush-hush")
 
   ctx.body = {
-    user
+    accessToken
   }
 })
 
