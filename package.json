@@ -1,0 +1,11 @@
+{
+  "name": "koading",
+  "version": "1.0.0",
+  "description": "Koa API example for the MedellinJS Workshop featuring Pokemons",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alex Ramirez <alexander.ramirez@gmail.com>",
+  "license": "MIT"
+}
