@@ -1,0 +1,24 @@
+{
+  "name": "koading",
+  "version": "1.0.0",
+  "description": "Koa API example for the MedellinJS Workshop featuring Pokemons",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alex Ramirez <alexander.ramirez@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^1.19.1"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1",
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-logger": "^3.2.0",
+    "koa-mongo": "^1.8.1",
+    "koa-router": "^7.4.0"
+  }
+}

@@ -1,0 +1,237 @@
+swagger: "2.0"
+info:
+  title: Koading MedellinJS Workshop API
+  description: Koa API example for the MedellinJS Workshop featuring Pokemons.
+  version: 1.0.0
+host: http://localhost:3000/
+basePath: /
+tags:
+- name: User
+  description: Operations on user
+schemes:
+- http
+securityDefinitions:
+  accessToken:
+    type: "apiKey"
+    name: "authorization"
+    in: "header"
+paths:
+  /users:
+    post:
+      tags:
+      - User
+      summary: Register user into the system
+      operationId: addUser
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Access information
+        required: true
+        schema:
+          $ref: '#/definitions/NewUser'
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/User'
+  /user/{id}:  
+    get:
+      tags:
+      - User
+      summary: Get user by id
+      description: This can only be done by the logged user.
+      operationId: getUserById
+      produces:
+      - application/json
+      parameters:
+      - name: id
+        in: path
+        description: The id that needs to be fetched. 
+        required: true
+        type: string
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/User'
+        400:
+          description: Invalid id supplied
+        404:
+          description: User not found
+  /users/catchPokemon:
+    patch:
+      tags:
+      - User
+      security:
+        - accessToken: []
+      summary: User catches a pokemon
+      description: This can only be done by the logged user.
+      operationId: catchPokemon
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Access information
+        required: true
+        schema:
+          $ref: '#/definitions/Pokemon'
+      responses:
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/User'
+        401:
+          description: Invalid username/password supplied
+  /users/login:
+    post:
+      tags:
+      - User
+      summary: Logs user into the system
+      description: This can only be done by the logged user.
+      operationId: loginUser
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Access information
+        required: true
+        schema:
+          $ref: '#/definitions/Credentials'
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Tokens'
+          headers:
+            X-Rate-Limit:
+              type: integer
+              format: int32
+              description: calls per hour allowed by the user
+            X-Expires-After:
+              type: string
+              format: date-time
+              description: date in UTC when token expires
+        401:
+          description: Invalid username/password supplied
+  /users/removeAccount:
+    delete:
+      tags:
+      - User
+      security:
+        - accessToken: []
+      summary: Delete the current logged in user from the system
+      description: user removed
+      operationId: deleteUser
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        default:
+          description: successful operation
+  /users/logout:
+    get:
+      tags:
+      - User
+      summary: Logs out current logged in user session
+      description: user logged out
+      operationId: logoutUser
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        default:
+          description: successful operation
+definitions:
+  User:
+    type: object
+    properties:
+      _id:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+        format: email
+      pokemons:
+        type: array
+        items:
+          $ref: '#/definitions/Pokemon' 
+  NewUser:
+    type: object
+    required:
+      - firstName
+      - lastName
+      - email
+      - password
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+        format: email
+      password:
+        type: string
+  Pokemon:
+    type: object
+    required:
+      - name
+      - level
+      - hitPoints
+      - attacks
+    properties:
+      name:
+        type: string
+      level:
+        type: integer
+        format: int32
+      hitPoints:
+        type: integer
+        format: int32
+      attacks:
+        type: string
+  Credentials:
+    type: object
+    required:
+      - email
+      - password
+    properties:
+      email:
+        type: string
+        format: email
+      password:
+        type: string
+  Tokens:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+        - accessExpiresAt
+        - refreshExpiresAt
+      properties:
+        accessToken:
+          type: string
+          format: $jwt
+          description: Access token to be placed in the Authorization header
+        refreshToken:
+          type: string
+          format: $jwt
+          description: Token to renew the access token
+        accessExpiresAt:
+          type: string
+          format: $unix
+          description: Access token expiration date
+        refreshExpiresAt:
+          type: string
+          format: $unix
+          description: Refresh token expiration date
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
