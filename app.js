@@ -2,8 +2,13 @@
 
 const Koa = require('koa')
 const Router = require('koa-router')
+const bodyParser = require('koa-bodyparser')
+const logger = require('koa-logger')
+
 const router = new Router()
 const app = new Koa()
+app.use(bodyParser())
+app.use(logger())
 
 router.get('/', async(ctx, next) => {
   ctx.body = {
@@ -12,24 +17,43 @@ router.get('/', async(ctx, next) => {
 })
 
 router.post('/users', async (ctx, next) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    password
+  } = ctx.request.body
+
   ctx.body = {
-    message: '/users'
+    message: '/users',
   }
 })
 
 router.get('/users/:id', async(ctx, next) => {
+  const { id } = ctx.params
+
   ctx.body = {
-    message: 'users/:id'
+    message: 'users/:id',
+    params: ctx.params
   }
 })
 
 router.patch('/users/catchPokemon', async(ctx, next) => {
+  const {
+    name,
+    level,
+    hitPoints,
+    attacks
+  } = ctx.request.body
+
   ctx.body = {
-    message: 'users/catchPokemon'
+    message: 'users/catchPokemon',
   }
 })
 
 router.post('/users/login', async(ctx, next) => {
+  const { email, password } = ctx.request.body
+
   ctx.body = {
     message: 'users/login'
   }
