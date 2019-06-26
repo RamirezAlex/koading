@@ -4,11 +4,13 @@ const Koa = require('koa')
 const Router = require('koa-router')
 const bodyParser = require('koa-bodyparser')
 const logger = require('koa-logger')
+const mongo = require('koa-mongo')
 
 const router = new Router()
 const app = new Koa()
 app.use(bodyParser())
 app.use(logger())
+app.use(mongo())
 
 router.get('/', async(ctx, next) => {
   ctx.body = {
@@ -24,17 +26,32 @@ router.post('/users', async (ctx, next) => {
     password
   } = ctx.request.body
 
+  const result = await ctx.db.collection('pokemon')
+    .insertOne({
+      firstName,
+      lastName,
+      email,
+      password
+    })
+
+  ctx.status = 201
+  const user = result.ops[0]
+  delete user.password
+  
   ctx.body = {
-    message: '/users',
+    user
   }
 })
 
 router.get('/users/:id', async(ctx, next) => {
   const { id } = ctx.params
 
+  const user = await ctx.db.collection('pokemon')
+    .findOne({ _id : mongo.ObjectId(id) })
+
+  delete user.password
   ctx.body = {
-    message: 'users/:id',
-    params: ctx.params
+    user
   }
 })
 
@@ -54,8 +71,15 @@ router.patch('/users/catchPokemon', async(ctx, next) => {
 router.post('/users/login', async(ctx, next) => {
   const { email, password } = ctx.request.body
 
+  const user = await ctx.db.collection('pokemon')
+    .findOne({ email, password })
+
+  if (!user) {
+    return ctx.status = 404
+  }
+
   ctx.body = {
-    message: 'users/login'
+    user
   }
 })
 
